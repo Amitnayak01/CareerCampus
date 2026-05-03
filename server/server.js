@@ -39,9 +39,19 @@ if (process.env.NODE_ENV === 'development') {
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/careercampus')
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+  .then(async () => {
+    console.log('✅ MongoDB Connected');
 
+    // ✅ ADD THIS BLOCK
+    if (process.env.AUTO_SEED === 'true') {
+    require('./data/seedData');
+     
+      console.log('✅ Auto-seed complete');
+    }
+
+  })
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+  
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/careers', careerRoutes);
