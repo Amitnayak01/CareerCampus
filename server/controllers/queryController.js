@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator');
 const Query = require('../models/Query');
 
 // @desc    Create a new query/contact
-// @route   POST /api/queries
+// @route   POST /api/queries  (optionalAuth — links to user if logged in)
 const createQuery = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -11,9 +11,16 @@ const createQuery = async (req, res) => {
   try {
     const { name, email, subject, message, category } = req.body;
     const queryData = { name, email, subject, message, category };
+
+    // Link to logged-in user if token was present (optionalAuth sets req.user)
     if (req.user) queryData.student = req.user.id;
+
     const query = await Query.create(queryData);
-    res.status(201).json({ success: true, message: 'Your query has been submitted! We\'ll get back to you soon.', query });
+    res.status(201).json({
+      success: true,
+      message: "Your query has been submitted! We'll get back to you soon.",
+      query,
+    });
   } catch (error) {
     res.status(500).json({ error: 'Failed to submit query.' });
   }
@@ -21,12 +28,40 @@ const createQuery = async (req, res) => {
 
 // @desc    Get my queries (student)
 // @route   GET /api/queries/mine
+// Searches by student ID first; also matches by email so that queries submitted
+// while the user was not logged in (student field missing) are still visible.
 const getMyQueries = async (req, res) => {
   try {
-    const queries = await Query.find({ student: req.user.id }).sort({ createdAt: -1 });
+    const queries = await Query.find({
+      $or: [
+        { student: req.user.id },
+        { email: req.user.email },
+      ],
+    }).sort({ createdAt: -1 });
+
     res.json({ success: true, queries });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch your queries.' });
+  }
+};
+
+// @desc    Delete my query (student — own queries only)
+// @route   DELETE /api/queries/mine/:id
+const deleteMyQuery = async (req, res) => {
+  try {
+    // Allow deletion if the query belongs to this user by ID or email
+    const query = await Query.findOne({
+      _id: req.params.id,
+      $or: [
+        { student: req.user.id },
+        { email: req.user.email },
+      ],
+    });
+    if (!query) return res.status(404).json({ error: 'Query not found or not authorized.' });
+    await query.deleteOne();
+    res.json({ success: true, message: 'Query deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete query.' });
   }
 };
 
@@ -40,8 +75,12 @@ const getAllQueries = async (req, res) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [queries, total] = await Promise.all([
-      Query.find(filter).populate('student', 'name email').sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
-      Query.countDocuments(filter)
+      Query.find(filter)
+        .populate('student', 'name email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      Query.countDocuments(filter),
     ]);
     res.json({ success: true, queries, total, pages: Math.ceil(total / parseInt(limit)) });
   } catch (error) {
@@ -55,11 +94,12 @@ const replyToQuery = async (req, res) => {
   try {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Reply message is required.' });
+
     const query = await Query.findByIdAndUpdate(
       req.params.id,
       {
         $push: { replies: { admin: req.user.id, adminName: req.user.name, message } },
-        status: 'in-progress'
+        status: 'in-progress',
       },
       { new: true }
     );
@@ -90,7 +130,7 @@ const updateQueryStatus = async (req, res) => {
 const getQueryStats = async (req, res) => {
   try {
     const stats = await Query.aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
+      { $group: { _id: '$status', count: { $sum: 1 } } },
     ]);
     const total = await Query.countDocuments();
     res.json({ success: true, stats, total });
@@ -98,7 +138,6 @@ const getQueryStats = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch stats.' });
   }
 };
-
 
 // @desc    Delete a query (admin)
 // @route   DELETE /api/queries/:id
@@ -112,4 +151,13 @@ const deleteQuery = async (req, res) => {
   }
 };
 
-module.exports = { createQuery, getMyQueries, getAllQueries, replyToQuery, updateQueryStatus, getQueryStats, deleteQuery };
+module.exports = {
+  createQuery,
+  getMyQueries,
+  deleteMyQuery,
+  getAllQueries,
+  replyToQuery,
+  updateQueryStatus,
+  getQueryStats,
+  deleteQuery,
+};

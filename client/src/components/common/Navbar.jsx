@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Menu, X, Sun, Moon, GraduationCap, ChevronDown, User, LayoutDashboard, BookmarkCheck, LogOut, Shield } from 'lucide-react';
+import {
+  Menu, X, Sun, Moon, GraduationCap, ChevronDown,
+  User, LayoutDashboard, BookmarkCheck, LogOut, Shield, MessageSquare
+} from 'lucide-react';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,10 +25,10 @@ export default function Navbar() {
   useEffect(() => { setIsOpen(false); setUserMenuOpen(false); }, [location]);
 
   const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/careers', label: 'Explore Careers' },
+    { to: '/',         label: 'Home' },
+    { to: '/careers',  label: 'Explore Careers' },
     { to: '/guidance', label: 'Career Guidance' },
-    { to: '/contact', label: 'Contact' }
+    { to: '/contact',  label: 'Contact' },
   ];
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -37,6 +40,7 @@ export default function Navbar() {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 font-bold text-xl">
             <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-accent-600 rounded-xl flex items-center justify-center shadow-glow">
@@ -63,8 +67,10 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <div className="relative">
-                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                >
                   <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                     {user?.name?.charAt(0).toUpperCase()}
                   </div>
@@ -76,10 +82,12 @@ export default function Navbar() {
 
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 glass rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50">
+                    {/* User info */}
                     <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-700">
                       <p className="font-semibold text-sm text-slate-900 dark:text-white">{user?.name}</p>
                       <p className="text-xs text-slate-500">{user?.email}</p>
                     </div>
+
                     <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-brand-50 dark:hover:bg-brand-900/30 text-slate-700 dark:text-slate-300 transition-colors">
                       <LayoutDashboard className="w-4 h-4" /> Dashboard
                     </Link>
@@ -89,14 +97,30 @@ export default function Navbar() {
                     <Link to="/saved" className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-brand-50 dark:hover:bg-brand-900/30 text-slate-700 dark:text-slate-300 transition-colors">
                       <BookmarkCheck className="w-4 h-4" /> Saved Careers
                     </Link>
+
+                    {/* ── My Queries ── */}
+                    <Link to="/my-queries" className={`flex items-center gap-3 px-4 py-2 text-sm hover:bg-brand-50 dark:hover:bg-brand-900/30 transition-colors ${
+                      isActive('/my-queries')
+                        ? 'text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30'
+                        : 'text-slate-700 dark:text-slate-300'
+                    }`}>
+                      <MessageSquare className="w-4 h-4" /> My Queries
+                    </Link>
+
                     {user?.role === 'admin' && (
                       <Link to="/admin" className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-brand-50 dark:hover:bg-brand-900/30 text-brand-600 dark:text-brand-400 transition-colors">
                         <Shield className="w-4 h-4" /> Admin Panel
                       </Link>
                     )}
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors">
-                      <LogOut className="w-4 h-4" /> Logout
-                    </button>
+
+                    <div className="border-t border-slate-100 dark:border-slate-700 mt-1 pt-1">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" /> Logout
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -123,6 +147,16 @@ export default function Navbar() {
                   isActive(link.to) ? 'text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30' : ''
                 }`}>{link.label}</Link>
               ))}
+
+              {/* My Queries in mobile menu (only when logged in) */}
+              {isAuthenticated && (
+                <Link to="/my-queries" className={`flex items-center gap-3 nav-link px-4 py-3 rounded-xl ${
+                  isActive('/my-queries') ? 'text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30' : ''
+                }`}>
+                  <MessageSquare className="w-4 h-4" /> My Queries
+                </Link>
+              )}
+
               {!isAuthenticated && (
                 <div className="flex gap-2 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                   <Link to="/login" className="btn-secondary flex-1 text-center text-sm py-2">Login</Link>

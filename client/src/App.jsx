@@ -16,6 +16,7 @@ import ContactPage from './pages/ContactPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import SavedCareersPage from './pages/SavedCareersPage';
+import MyQueriesPage from './pages/MyQueriesPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Layout
@@ -64,6 +65,7 @@ function AppRoutes() {
       <Route path="/recommendations" element={<ProtectedRoute><AppLayout><RecommendationsPage /></AppLayout></ProtectedRoute>} />
       <Route path="/saved" element={<ProtectedRoute><AppLayout><SavedCareersPage /></AppLayout></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
+      <Route path="/my-queries" element={<ProtectedRoute><AppLayout><MyQueriesPage /></AppLayout></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute adminOnly><AppLayout noFooter><AdminPage /></AppLayout></ProtectedRoute>} />
 
       <Route path="*" element={<AppLayout><NotFoundPage /></AppLayout>} />

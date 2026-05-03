@@ -534,18 +534,26 @@ export default function AdminPage() {
               <>
                 {/* Stat Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  {[
-                    { label: 'Total Students', value: stats?.users?.total || 0, icon: <Users className="w-6 h-6" />, color: 'from-brand-500 to-brand-600' },
-                    { label: 'Total Careers',  value: stats?.careers?.total || 0, icon: <Briefcase className="w-6 h-6" />, color: 'from-emerald-500 to-teal-600' },
-                    { label: 'Total Queries',  value: stats?.queries?.total || 0, icon: <MessageSquare className="w-6 h-6" />, color: 'from-accent-500 to-pink-600' },
-                    { label: 'Open Queries',   value: stats?.queries?.stats?.find(s => s._id === 'open')?.count || 0, icon: <Clock className="w-6 h-6" />, color: 'from-amber-500 to-orange-600' },
-                  ].map((s, i) => (
-                    <div key={i} className="card p-5">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${s.color} rounded-xl flex items-center justify-center text-white mb-3`}>{s.icon}</div>
-                      <div className="text-2xl font-bold text-slate-900 dark:text-white">{s.value}</div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">{s.label}</div>
-                    </div>
-                  ))}
+
+
+{[
+  { label: 'Total Students', value: stats?.users?.total || 0,        icon: <Users className="w-6 h-6" />,        color: 'from-brand-500 to-brand-600',    tab: 'users'   },
+  { label: 'Total Careers',  value: stats?.careers?.total || 0,      icon: <Briefcase className="w-6 h-6" />,    color: 'from-emerald-500 to-teal-600',   tab: 'careers' },
+  { label: 'Total Queries',  value: stats?.queries?.total || 0,      icon: <MessageSquare className="w-6 h-6" />,color: 'from-accent-500 to-pink-600',    tab: 'queries' },
+  { label: 'Open Queries',   value: stats?.queries?.stats?.find(s => s._id === 'open')?.count || 0, icon: <Clock className="w-6 h-6" />, color: 'from-amber-500 to-orange-600', tab: 'queries' },
+].map((s, i) => (
+  <button
+    key={i}
+    onClick={() => setActiveTab(s.tab)}
+    className="card p-5 text-left hover:ring-2 hover:ring-brand-400/50 hover:shadow-lg transition-all duration-200 group w-full"
+  >
+    <div className={`w-12 h-12 bg-gradient-to-br ${s.color} rounded-xl flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform duration-200`}>
+      {s.icon}
+    </div>
+    <div className="text-2xl font-bold text-slate-900 dark:text-white">{s.value}</div>
+    <div className="text-sm text-slate-500 dark:text-slate-400">{s.label}</div>
+  </button>
+))}
                 </div>
 
                 {/* Charts Row */}
